@@ -5,11 +5,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class SpiesShowcaseTest extends DoubleTestImpl {
+
     @Override
     @BeforeEach
-    public void initSpy() {
-        super.initSpy();
-    }
+    public void initSpy() { super.initSpy(); }
 
     @Test
     @DisplayName("AttemptOn is called as expected")

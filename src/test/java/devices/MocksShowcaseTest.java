@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class MocksShowcaseTest extends DoubleTestImpl {
+
     @Override
     @BeforeEach
     public void initMock() {

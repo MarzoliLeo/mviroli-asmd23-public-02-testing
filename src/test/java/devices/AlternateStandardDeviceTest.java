@@ -15,6 +15,7 @@ public class AlternateStandardDeviceTest {
 
     private Device device;
     @Mock FailingPolicy stubFailingPolicy;
+
     @Spy RandomFailing spyRandomPolicy;
 
     @BeforeEach

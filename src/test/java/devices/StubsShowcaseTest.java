@@ -4,12 +4,11 @@ import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class StubsShowcaseTest extends DoubleTestImpl{
+class StubsShowcaseTest extends DoubleTestImpl {
+
     @Override
     @BeforeEach
-    public void initMock() {
-        super.initMock();
-    }
+    public void initMock() { super.initMock(); }
 
     @Test
     @DisplayName("Device can be switched on")

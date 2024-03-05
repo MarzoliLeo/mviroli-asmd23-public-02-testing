@@ -5,10 +5,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class DummiesShowcaseTest extends DoubleTestImpl {
+
     @Override
-    public void initMock() {
-        super.initMock();
-    }
+    public void initMock() { super.initMock(); }
 
     @Test
     @DisplayName("Device is initially off")
