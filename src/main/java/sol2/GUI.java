@@ -13,10 +13,12 @@ public class GUI extends JFrame {
     private Logic logic;
     private Log log;
     
-    public GUI(int size) {
+    public GUI(int size, Log log) {
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setSize(70*size, 70*size);
-        this.logic = new LogicImpl(size);
+        this.log = log;
+        this.logic = new LogicImpl(size, this.log);
+
         
         JPanel panel = new JPanel(new GridLayout(size,size));
         this.getContentPane().add(panel);
@@ -24,6 +26,7 @@ public class GUI extends JFrame {
         ActionListener al = e -> {
             var jb = (JButton)e.getSource();
             this.logic.hit(this.cells.get(jb));
+            this.log.info("GUI finished hit...");
             for (var entry: this.cells.entrySet()){
                 entry.getKey().setText(
                     this.logic
@@ -32,7 +35,7 @@ public class GUI extends JFrame {
                         .orElse(" "));
             }
             if (this.logic.isOver()){
-                Log.info("Game over. Exiting...");
+                this.log.info("Game over. Exiting...");
                 System.exit(0);
             }
         };
@@ -53,10 +56,6 @@ public class GUI extends JFrame {
     // Setter methods for integration testing
     public void setLogic(Logic logic) {
         this.logic = logic;
-    }
-
-    public void setLog(Log log) {
-        this.log = log;
     }
 
     // Getter methods for integration testing

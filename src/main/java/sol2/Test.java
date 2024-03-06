@@ -27,7 +27,8 @@ public class Test {
 
 
     public static void main(String[] args) throws java.io.IOException {
-        Log.info("Starting the GUI...");
-        new GUI(10); 
+        Log log = new Log();
+        log.info("Starting the GUI...");
+        new GUI(10, log);
     }
 }

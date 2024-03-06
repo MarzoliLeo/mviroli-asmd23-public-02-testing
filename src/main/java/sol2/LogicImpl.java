@@ -10,15 +10,17 @@ public class LogicImpl implements Logic {
     private final int size;
     private List<Position> marks = new LinkedList<>();
     private boolean moving = false;
+    private Log log;
 
-    public LogicImpl(int size) {
+    public LogicImpl(int size, Log log) {
         this.size = size;
+        this.log = log;
     }
 
     @Override
     public Optional<Integer> hit(Position position) {
         if (this.isOver()){
-            Log.info("Game over. Exiting...");
+            this.log.info("Game over. Exiting...");
             return Optional.empty();
         }
         if (this.moving || startMoving(position)){
@@ -27,23 +29,23 @@ public class LogicImpl implements Logic {
             return Optional.empty();
         }
         this.marks.add(position);
-        Log.info("Cell marked at position: " + position);
+        this.log.info("Cell marked at position: " + position);
         return Optional.of(this.marks.size());
     }
 
     private boolean neighbours(Position p1, Position p2){
-        Log.info("Checking for neightbours marks...");
+        this.log.info("Checking for neightbours marks...");
         return Math.abs(p1.x()-p2.x()) <= 1 && Math.abs(p1.y()-p2.y()) <= 1;
     }
 
     private boolean startMoving(Position position) {
-        Log.info("Starting to move marks, but before...");
+        this.log.info("Starting to move marks, but before...");
         return this.marks.stream().anyMatch(p -> neighbours(p, position));
     }
 
     //changed visibility for testing.
     public void moveMarks() {
-        Log.info("Moving marks...");
+        this.log.info("Moving marks...");
         this.marks = this.marks
                 .stream()
                 .map(p -> new Position(p.x()+1, p.y()-1))
