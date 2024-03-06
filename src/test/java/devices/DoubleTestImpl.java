@@ -3,6 +3,7 @@ package devices;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
+
 public class DoubleTestImpl implements DoubleTest {
 
     // Task 1 Test - with Java
@@ -36,4 +37,5 @@ public class DoubleTestImpl implements DoubleTest {
         this.failingPolicyScala = spy(FailingPolicyScala.apply());
         this.deviceScala =  DeviceScala.apply(failingPolicyScala);
     }
+
 }
