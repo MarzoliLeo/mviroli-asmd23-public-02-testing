@@ -41,7 +41,8 @@ public class LogicImpl implements Logic {
         return this.marks.stream().anyMatch(p -> neighbours(p, position));
     }
 
-    private void moveMarks() {
+    //changed visibility for testing.
+    public void moveMarks() {
         Log.info("Moving marks...");
         this.marks = this.marks
                 .stream()
@@ -58,4 +59,7 @@ public class LogicImpl implements Logic {
     public boolean isOver() {
         return this.marks.stream().anyMatch(p -> p.x() == this.size || p.y() == -1);
     }
+
+    //Aux methods for testing.
+
 }

@@ -10,7 +10,8 @@ public class GUI extends JFrame {
     
     private static final long serialVersionUID = -6218820567019985015L;
     private final Map<JButton, Position> cells = new HashMap<>();
-    private final Logic logic;
+    private Logic logic;
+    private Log log;
     
     public GUI(int size) {
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -45,6 +46,46 @@ public class GUI extends JFrame {
             }
         }
         this.setVisible(true);
+    }
+
+    /*Aux method for integration testing.*/
+
+    // Setter methods for integration testing
+    public void setLogic(Logic logic) {
+        this.logic = logic;
+    }
+
+    public void setLog(Log log) {
+        this.log = log;
+    }
+
+    // Getter methods for integration testing
+    public Map<JButton, Position> getCells() {
+        return this.cells;
+    }
+
+    // Method to check if the game is finished for integration testing
+    public boolean isGameFinished() {
+        return this.logic.isOver();
+    }
+
+    // New method to handle button clicks
+    public void handleButtonClick(JButton button) {
+        Position position = this.cells.get(button);
+        this.logic.hit(position);
+
+        for (var entry : this.cells.entrySet()) {
+            entry.getKey().setText(
+                    this.logic
+                            .getMark(entry.getValue())
+                            .map(String::valueOf)
+                            .orElse(" "));
+        }
+
+        if (this.logic.isOver()) {
+            this.log.info("Game over. Exiting...");
+            System.exit(0);
+        }
     }
     
 }
