@@ -1,68 +1,54 @@
 package integration_tests;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import sol2.*;
 
-import sol2.GUI;
-import sol2.Log;
-import sol2.LogicImpl;
-import sol2.Position;
-
-import javax.swing.JButton;
-import java.awt.event.ActionEvent;
+import javax.swing.*;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class IntegrationTest {
 
-    private LogicImpl logicMock;
-    private Log logMock;
-    private GUI gui;
-
-    @BeforeEach
-    void setUp() {
-        // Initialize the mocks
-        logicMock = mock(LogicImpl.class);
-        logMock = mock(Log.class);
-
-        // Initialize the object under test and manually inject the mocks
-        gui = new GUI(10);
-        gui.setLogic(logicMock);
-        gui.setLog(logMock);
-    }
 
     @Test
     void testGameIntegration() {
         // Arrange
-        JButton button = new JButton();
-        gui.getCells().put(button, new Position(0, 0));
+        GUI guiSpy = spy(new GUI(10));
+        LogicImpl logicMock = mock(LogicImpl.class);
+        Log logMock = mock(Log.class);
+
+        guiSpy.setLogic(logicMock);
+        guiSpy.setLog(logMock);
 
         // Stubbing the behavior of LogicImpl
         when(logicMock.hit(any())).thenReturn(Optional.of(1));
         when(logicMock.isOver()).thenReturn(false);
 
         // Act
-        //gui.getActionListener().actionPerformed(new ActionEvent(button, ActionEvent.ACTION_PERFORMED, "Command"));
-        //Check if hit any button of the grid.
-        //verify(logicMock).hit(any());
+        // Simulate user actions by clicking on a button
+        // Get the first button in the cells map of guiSpy
+        JButton button = guiSpy.getCells().keySet().iterator().next();
+
+        // Simulate a click on the button
+        guiSpy.handleButtonClick(button);
+        button.doClick(); // Simulate a click on the first button
 
         // Assert
         // Verify that the expected interactions between GUI, LogicImpl, and Log occurred
         //verify(logMock, atLeastOnce()).info(anyString());
         //verify(logMock, never()).error(anyString());
         verify(logicMock, atLeastOnce()).hit(any(Position.class));
-        verify(logicMock, never()).moveMarks(); // Assuming that moveMarks is not called in this scenario
+        verify(logicMock, never()).moveMarks();
         verify(logicMock, atLeastOnce()).getMark(any(Position.class));
 
         // Verify that the GUI updated the button text
-        assertEquals("1", button.getText());
+        assertEquals("1", guiSpy.getCells().keySet().iterator().next().getText());
 
         // Verify that the GUI did not exit the application (isOver is false)
-        assertFalse(gui.isGameFinished());
+        assertFalse(guiSpy.isGameFinished());
 
         // Verify Log messages
         ArgumentCaptor<String> logCaptor = ArgumentCaptor.forClass(String.class);
@@ -72,3 +58,5 @@ class IntegrationTest {
         // assertEquals("Expected log message", logCaptor.getValue());
     }
 }
+
+
