@@ -1,5 +1,5 @@
 # Lab 02 - ASMD
-## **Task 1 - Reorganize.**
+## **Task 1 - REORGANISE.**
 Specification: The repo has a device example, discussed in room. Play with it. Reorganise tests, which are currently grouped by type of mock. Seek
 for the perfect unit test!
 ### Task 1 - Implementazione
@@ -115,7 +115,7 @@ class FakesShowcaseTest extends TestTemplateImpl {
 Quelli visti precendentemente erano casi base. In questa classe di test si può vedere come espandere il metodo init per eventuali personalizzazioni dovute alla fase di testing.
 
 
-## **Task 2 - Tooling.**
+## **Task 2 - TOOLING.**
 Specification: Experiment with installing/using Mockito with Scala and/or in VSCode. Is VSCode better at all here? What’s the state of mocking
 technologies for Scala?
 
@@ -269,5 +269,88 @@ messages, through a log class. Now you have an App with at least 3 classes (GUI,
 for it? Search here: https://bitbucket.org/mviroli/oop2023-esami (2023, 2022,. . . )
 
 ### Task 3 - Implementazione 
+Ho deciso di implementare il codice a01a.sol2 del repo bitbucket. Una volta importato nel mio progetto, ciò che si richiedeva era implementare una classe di [Log.java](src/main/java/sol2/Log.java). Questa appare nel seguente modo: 
+```Java
+public class Log {
+    public void info(String message) {
+        System.out.println("[INFO] " + message);
+    }
 
+    public void error(String message) {
+        System.err.println("[ERROR] " + message);
+    }
+}
+```
+Utilizzando un riferimento alla seguente classe è possibile definire dei log da visualizzare durante l'esecuzione. Ecco un esempio di utilizzo in [LogicImpl.java](src/main/java/sol2/LogicImpl.java).
+```Java
+ @Override
+    public Optional<Integer> hit(Position position) {
+        if (this.isOver()){
+            this.log.info("Game over. Exiting...");
+            return Optional.empty();
+        }
+        if (this.moving || startMoving(position)){
+            this.moving = true;
+            this.moveMarks();
+            return Optional.empty();
+        }
+        this.marks.add(position);
+        this.log.info("Cell marked at position: " + position);
+        return Optional.of(this.marks.size());
+    }
+```
 
+Implementando ciò si disponeva di una applicazione suddivisa in GUI, Model, Log. E si era richiesto di scrivere un integration test ed esso si può trovare dentro [IntegrationTest.java](src/test/java/integration_tests/IntegrationTest.java). Questo appare nel seguente modo:
+```Java
+class IntegrationTest {
+
+    @Test
+    void testGameIntegration() {
+        Log logMock = mock(Log.class);
+        // Arrange
+        GUI guiSpy = spy(new GUI(10, logMock));
+        LogicImpl logicMock = mock(LogicImpl.class);
+
+        guiSpy.setLogic(logicMock);
+
+        // Stubbing the behavior of LogicImpl
+        when(logicMock.hit(any())).thenReturn(Optional.of(1));
+        when(logicMock.isOver()).thenReturn(false);
+
+        // Act
+        // Simulate user actions by clicking on a button
+        // Get the first button in the cells map of guiSpy
+        JButton button = guiSpy.getCells().keySet().iterator().next();
+
+        // Simulate a click on the button
+        guiSpy.handleButtonClick(button);
+        button.doClick(); // Simulate a click on the first button
+
+        // Assert
+        // Verify that the expected interactions between GUI, LogicImpl, and Log occurred
+        verify(logMock, atLeastOnce()).info(anyString());
+        verify(logMock, never()).error(anyString());
+        verify(logicMock, atLeastOnce()).hit(any(Position.class));
+        verify(logicMock, never()).moveMarks();
+        verify(logicMock, atLeastOnce()).getMark(any(Position.class));
+
+        // Verify that the GUI updated the button text
+        assertEquals("1", guiSpy.getCells().keySet().iterator().next().getText());
+
+        // Verify that the GUI did not exit the application (isOver is false)
+        assertFalse(guiSpy.isGameFinished());
+
+        // Verify Log messages
+        ArgumentCaptor<String> logCaptor = ArgumentCaptor.forClass(String.class);
+        verify(logMock, atLeastOnce()).info(logCaptor.capture());
+
+    }
+}
+```
+In sintesi, il test definisce una GUI, in cui vengono "iniettati" due mock: uno di Log e uno di LogicImpl. Preferisco l'utilizzo di uno spy in quanto mi permette di eseguire l'applicazione e avere un riscontro visivo di ciò che sta succedendo, cosa che non accade quando utilizzi un mock. All'interno del test definisco una logica minimale che si focalizzi soltanto sul verificare che le dipendenze ci siano e che l'applicazione funzioni come dovrebbe simulando il comportamento di un utente. In questo caso la complessità dell'applicazione era banale, siccome le funzionalità erano limitate, anche i Log lo erano. Integrare i log nel testing è risultato difficile. Inoltre, ho imparato che Mockito non ama i metodi statici. Non a caso ho dovuto ridefinire la mia classe Log nel corso dello sviluppo per accedervi tramite riferimento.
+
+## **Task 4 - GUI-TESTER.**
+Specification: Generally, GUIs are a problem with testing. How do we test them? How do we automatise as most as possible testing of an app with a
+GUI? Play with a simple example and derive some useful consideration.
+
+### Task 3 - Implementazione 
