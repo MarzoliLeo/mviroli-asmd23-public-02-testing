@@ -353,4 +353,18 @@ In sintesi, il test definisce una GUI, in cui vengono "iniettati" due mock: uno 
 Specification: Generally, GUIs are a problem with testing. How do we test them? How do we automatise as most as possible testing of an app with a
 GUI? Play with a simple example and derive some useful consideration.
 
-### Task 3 - Implementazione 
+### Task 4 - Implementazione 
+Il mio caso di studio è stato proprio il task 3, che implementa una GUI. Sono pienamente d'accordo sul fatto che testare una GUI sia difficile, per due ragioni per me valide:
+
+1. E' difficile replicare l'albero delle scelte di un utente.
+2. La GUI di per sè da già un riscontro visivo di ciò che deve accadere.
+
+Perciò, per quanto riguarda il primo punto. E' obbligatorio quando si testa una GUI limitare l'albero delle decisioni di un utente, bisogna focalizzarsi su quelli che sono le funzionalità principali che la GUI deve "coprire" andando a simulare le varie interazioni che possono accadere, nel caso del task 3 ciò è stato fatto è proprio andare a simulare il "click" del mouse all'interno della GUI e verificare che la griglia di gioco si aggiornasse e lo stato del sistema cambiasse rispetto ad esso. Se tutte le azioni risultano corrette, qualsiasi sia l'ordine di esecuzione queste andranno sempre a buon fine.
+Per il secondo punto. Come ho già accennato nel task 3, quando si effettua il testing di una GUI (per esempio tramite Mockito) si può ricadere in casi dove essa viene visualizzata a runtime (se si uno spy) e in caso dove la logica viene testata internamente (tramite mock) e il test fornisce soltanto l'output finale di completamento in caso di successo, altrimenti di errore. La mia considerazione a riguardo è quella di prediligere situazioni dove si ha un riscontro visivo, in quanto il numero di informazioni risulta maggiore in caso di debugging, sia dei test, che della GUI. 
+
+## **Task 5 - TESTING-LLM.**
+Specification: LLMs/ChatGPT can arguably help in write/improve/complete/implement/reverse-engineer a JUnit test, either unit or integration test.
+Experiment with this, based on the above tasks or in other cases. Is ChatGPT useful for all that?
+
+### Task 5 - Implementazione 
+
