@@ -4,7 +4,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 
-public class DoubleTestImpl implements DoubleTest {
+public class TestTemplateImpl implements TestTemplate {
 
     // Task 1 Test - with Java
     Device device;

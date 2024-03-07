@@ -6,7 +6,7 @@ import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class FakesShowcaseTestScala extends DoubleTestImpl {
+class FakesShowcaseTestScala extends TestTemplateImpl {
 
     @Override
     @BeforeEach

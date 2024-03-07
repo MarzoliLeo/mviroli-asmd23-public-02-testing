@@ -4,7 +4,7 @@ import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class DummiesShowcaseTest extends DoubleTestImpl {
+class DummiesShowcaseTest extends TestTemplateImpl {
 
     @Override
     public void initMock() { super.initMock(); }

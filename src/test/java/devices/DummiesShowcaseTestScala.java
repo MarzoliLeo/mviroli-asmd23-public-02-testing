@@ -4,7 +4,7 @@ import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class DummiesShowcaseTestScala extends DoubleTestImpl {
+class DummiesShowcaseTestScala extends TestTemplateImpl {
 
     @Override
     public void initMockScala() { super.initMockScala(); }

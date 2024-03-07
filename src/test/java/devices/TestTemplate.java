@@ -1,6 +1,6 @@
 package devices;
 
-interface DoubleTest {
+interface TestTemplate {
     void initMock();
     void initSpy();
     void initMockScala();
