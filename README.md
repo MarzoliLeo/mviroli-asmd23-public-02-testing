@@ -405,10 +405,11 @@ All'interno di questo task parlo del ruolo che ChatGPT e GitHubCopilot hanno avu
     }
 
 }
- ```
+```
+
 chiedendogli di trovare una implementazione di "Device" e di "FailingPolicy" che faccia funzionare questo test, la risposta è stata la seguente:
 
- ```Java
+```Java
 // Device.java
 public class Device {
     private boolean on;
