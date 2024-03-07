@@ -53,8 +53,6 @@ class IntegrationTest {
         ArgumentCaptor<String> logCaptor = ArgumentCaptor.forClass(String.class);
         verify(logMock, atLeastOnce()).info(logCaptor.capture());
 
-        // Assert specific log messages if needed
-        // assertEquals("Expected log message", logCaptor.getValue());
     }
 }
 
