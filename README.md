@@ -347,7 +347,7 @@ class IntegrationTest {
     }
 }
 ```
-In sintesi, il test definisce una GUI, in cui vengono "iniettati" due mock: uno di Log e uno di LogicImpl. Preferisco l'utilizzo di uno spy in quanto mi permette di eseguire l'applicazione e avere un riscontro visivo di ciò che sta succedendo, cosa che non accade quando utilizzi un mock. All'interno del test definisco una logica minimale che si focalizzi soltanto sul verificare che le dipendenze ci siano e che l'applicazione funzioni come dovrebbe simulando il comportamento di un utente. In questo caso la complessità dell'applicazione era banale, siccome le funzionalità erano limitate, anche i Log lo erano. Integrare i log nel testing è risultato difficile. Inoltre, ho imparato che Mockito non ama i metodi statici. Non a caso ho dovuto ridefinire la mia classe Log nel corso dello sviluppo per accedervi tramite riferimento.
+In sintesi, il test definisce una GUI, in cui vengono "iniettati" due mock: uno di Log e uno di LogicImpl. Preferisco l'utilizzo di uno spy in quanto mi permette di eseguire l'applicazione e avere un riscontro visivo di ciò che sta succedendo, cosa che non accade quando utilizzi un mock. All'interno del test definisco una logica minimale rappresentata da "handleButtonClick" che prende il core della business logic della GUI e ne cambia la visibilità in modo che si focalizzi soltanto sul verificare che le dipendenze ci siano e che l'applicazione funzioni come dovrebbe simulando il comportamento di un utente. In questo caso la complessità dell'applicazione era banale, siccome le funzionalità erano limitate, anche i Log lo erano. Integrare i log nel testing è risultato difficile. Inoltre, ho imparato che Mockito non ama i metodi statici. Non a caso ho dovuto ridefinire la mia classe Log nel corso dello sviluppo per accedervi tramite riferimento.
 
 ## **Task 4 - GUI-TESTER.**
 Specification: Generally, GUIs are a problem with testing. How do we test them? How do we automatise as most as possible testing of an app with a
@@ -367,4 +367,9 @@ Specification: LLMs/ChatGPT can arguably help in write/improve/complete/implemen
 Experiment with this, based on the above tasks or in other cases. Is ChatGPT useful for all that?
 
 ### Task 5 - Implementazione 
-
+All'interno di questo task parlo del ruolo che ChatGPT e GitHubCopilot hanno avuto nella realizzazione di questo laboratorio, analizzando singolarmente le varie fasi:
+* Write: gli LLM in generale sono molto bravi nella creazione di test che essi siano, JUnit, Mockito, unit test ed integration. Forniscono soluzioni molto specifiche per ciò che viene richiesto e sono in grado di aiutare molto sotto questo aspetto, fornendo anche idee di funzionalità che magari non si avevano precedentemente preso in considerazione.
+* Improve: questo è ciò che fanno meglio. Se si da un test ad un LLM e gli si chiede di scriverlo in maniera "avanzata" oppure utilizzando una particolare libreria rispetto ad un'altra o di usare spy, invece che mock, ecc. ecc. Lo fanno senza nessun tipo di problema e molto raramente sbagliano.
+* Complete: Per quanto riguarda il completamento di test, rientra un po' nella fase di writing. Gli LLM in generale ho notato che non hanno difficoltà nel generare del codice che esso sia nuovo o partendo da un esempio. Senza fornigli il contesto della mia applicazione sono in grado di capire soltanto da altri test qual'è il comportamento che si vuole replicare.
+* Implement: 
+* Reverse-engineer:
