@@ -347,7 +347,7 @@ class IntegrationTest {
     }
 }
 ```
-In sintesi, il test definisce una GUI, in cui vengono "iniettati" due mock: uno di Log e uno di LogicImpl. Preferisco l'utilizzo di uno spy in quanto mi permette di eseguire l'applicazione e avere un riscontro visivo di ciò che sta succedendo, cosa che non accade quando utilizzi un mock. All'interno del test definisco una logica minimale rappresentata da "handleButtonClick" che prende il core della business logic della GUI e ne cambia la visibilità in modo che si focalizzi soltanto sul verificare che le dipendenze ci siano e che l'applicazione funzioni come dovrebbe simulando il comportamento di un utente. In questo caso la complessità dell'applicazione era banale, siccome le funzionalità erano limitate, anche i Log lo erano. Integrare i log nel testing è risultato difficile. Inoltre, ho imparato che Mockito non ama i metodi statici. Non a caso ho dovuto ridefinire la mia classe Log nel corso dello sviluppo per accedervi tramite riferimento.
+In sintesi, il test definisce una [GUI](src/main/java/sol2/GUI.java), in cui vengono "iniettati" due mock: uno di Log e uno di LogicImpl. Preferisco l'utilizzo di uno spy in quanto mi permette di eseguire l'applicazione e avere un riscontro visivo di ciò che sta succedendo, cosa che non accade quando utilizzi un mock. All'interno del test definisco una logica minimale rappresentata da "handleButtonClick" che prende il core della business logic della GUI e ne cambia la visibilità in modo che si focalizzi soltanto sul verificare che le dipendenze ci siano e che l'applicazione funzioni come dovrebbe simulando il comportamento di un utente. In questo caso la complessità dell'applicazione era banale, siccome le funzionalità erano limitate, anche i Log lo erano. Integrare i log nel testing è risultato difficile. Inoltre, ho imparato che Mockito non ama i metodi statici. Non a caso ho dovuto ridefinire la mia classe Log nel corso dello sviluppo per accedervi tramite riferimento.
 
 ## **Task 4 - GUI-TESTER.**
 Specification: Generally, GUIs are a problem with testing. How do we test them? How do we automatise as most as possible testing of an app with a
@@ -371,5 +371,88 @@ All'interno di questo task parlo del ruolo che ChatGPT e GitHubCopilot hanno avu
 * Write: gli LLM in generale sono molto bravi nella creazione di test che essi siano, JUnit, Mockito, unit test ed integration. Forniscono soluzioni molto specifiche per ciò che viene richiesto e sono in grado di aiutare molto sotto questo aspetto, fornendo anche idee di funzionalità che magari non si avevano precedentemente preso in considerazione.
 * Improve: questo è ciò che fanno meglio. Se si da un test ad un LLM e gli si chiede di scriverlo in maniera "avanzata" oppure utilizzando una particolare libreria rispetto ad un'altra o di usare spy, invece che mock, ecc. ecc. Lo fanno senza nessun tipo di problema e molto raramente sbagliano.
 * Complete: Per quanto riguarda il completamento di test, rientra un po' nella fase di writing. Gli LLM in generale ho notato che non hanno difficoltà nel generare del codice che esso sia nuovo o partendo da un esempio. Senza fornigli il contesto della mia applicazione sono in grado di capire soltanto da altri test qual'è il comportamento che si vuole replicare.
-* Implement: 
-* Reverse-engineer:
+* Implement: Nell'implementazione rimango sempre dell'idea che gli LLM deviano il percorso di sviluppo di un programmatore. Perché seppur i test che forniscono sono corretti, non tengono in considerazione il design del sistema. Perciò, vanno comunque modificati per adattarsi al meglio a ciò che è stato sviluppato, facendo perdere un po' il focus su ciò che si vuole ottenere. Piuttosto che passare il tempo a implementare test, si passa il tempo a debuggare test generati dagli LLM.
+* Reverse-engineer: Ho effettuato una prova di quest'ultimo tramite ChatGPT, volendo effettuare reverse engineering del seguente test
+  ```Java
+  class MocksShowcaseTest extends TestTemplateImpl {
+
+    @Override
+    @BeforeEach
+    public void initMock() {
+        super.initMock();
+        when(failingPolicy.attemptOn()).thenReturn(true, true, false);
+        when(failingPolicy.policyName()).thenReturn("mock");
+    }
+
+    @Test
+    @DisplayName("attemptOn is called as expected")
+    void testAttemptOn() {
+        verify(failingPolicy, times(0)).attemptOn();
+        device.on();
+        verify(failingPolicy, times(1)).attemptOn();
+        assertTrue(device.isOn());
+
+        device.off();
+        verify(failingPolicy, times(1)).attemptOn();
+        device.on();
+        verify(failingPolicy, times(2)).attemptOn();
+        assertTrue(device.isOn());
+
+        device.off();
+        verify(failingPolicy, times(2)).attemptOn();
+        assertThrows(IllegalStateException.class, () -> device.on());
+        verify(failingPolicy, times(3)).attemptOn();
+    }
+
+}
+ ```
+chiedendogli di trovare una implementazione di "Device" e di "FailingPolicy" che faccia funzionare questo test, la risposta è stata la seguente:
+ ```Java
+// Device.java
+public class Device {
+    private boolean on;
+
+    public void on() {
+        this.on = true;
+    }
+
+    public void off() {
+        this.on = false;
+    }
+
+    public boolean isOn() {
+        return on;
+    }
+}
+
+ ```
+ ```Java
+// FailingPolicy.java
+public class FailingPolicy {
+    private boolean[] attemptOnResults;
+    private String policyName;
+
+    public FailingPolicy(boolean[] attemptOnResults, String policyName) {
+        this.attemptOnResults = attemptOnResults;
+        this.policyName = policyName;
+    }
+
+    public boolean attemptOn() {
+        // Simula il comportamento di attemptOn restituendo valori consecutivi
+        if (attemptOnResults.length > 0) {
+            boolean result = attemptOnResults[0];
+            // Rimuovi il primo elemento dall'array
+            attemptOnResults = Arrays.copyOfRange(attemptOnResults, 1, attemptOnResults.length);
+            return result;
+        } else {
+            // In caso l'array sia vuoto, ritorna false di default
+            return false;
+        }
+    }
+
+    public String policyName() {
+        return policyName;
+    }
+}
+```
+Ciò che si conclude è il fatto che riesce per questa applicazione in particolare ad effettuare un reverse engineering molto vicino all'originale, dovuto al fatto che la complessità di ciò che è stato sviluppato è ancora sostenibile. Si può notare come non pensa ad una implementazione generale della classe, ma soltanto ai metodi che vengono utilizzati nel test. E per quanto riguarda FailingPolicy il mio commento personale, è che utilizza un array di boolean, che a mio parere è proprio brutto, simula lo stesso comportamento, ma non è di qualità.
