@@ -51,15 +51,15 @@ Poi, ho suddiviso in diverse classi quelli che prima apparivano test "@nested" e
 class DummiesShowcaseTest extends TestTemplateImpl {
 
     @Override
+    @BeforeEach
     public void initMock() { super.initMock(); }
 
     @Test
     @DisplayName("Device is initially off")
     void testInitiallyOff() {
-        FailingPolicy dummyFailingPolicy = mock(FailingPolicy.class);
-        device = new StandardDevice(dummyFailingPolicy);
         assertFalse(device.isOn());
     }
+
 }
 ```
 ```Java
@@ -120,5 +120,154 @@ Specification: Experiment with installing/using Mockito with Scala and/or in VSC
 technologies for Scala?
 
 ### Task 2 - Implementazione 
+Per l'implementazione in Scala come visto precedentemente in [TestTemplateImpl.java](src/test/java/devices/TestTemplateImpl.java) si è implementato la business logic tramite le classi [AdderScala.scala](src/main/java/coverage/AdderScala.scala), [DeviceScala.scala](src/main/java/devices/DeviceScala.scala) e [FailingPolicyScala.scala](src/main/java/devices/FailingPolicyScala.scala). Di seguito vengono riportate le loro implementazioni.
 
-Link utile per vscode: [PippoBaudo] (https://stackoverflow.com/questions/56674827/junit-in-visual-studio-code)
+
+```Scala
+trait AdderScala {
+  def add(i1: Int, i2: Int): Int
+}
+
+object AdderScala {
+  private class AdderScalaImpl extends AdderScala {
+    override def add(i1: Int, i2: Int): Int = (i1, i2) match {
+
+      case (x, y)
+        if x > 0 && y > 0
+      => x + y
+      case _ => -1
+    }
+  }
+  
+  def apply(): AdderScala = new AdderScalaImpl
+}
+```
+```Scala
+trait DeviceScala {
+
+  def on(): Unit
+
+  def off(): Unit
+
+  def isOn(): Boolean
+
+  def reset(): Unit
+
+}
+
+object DeviceScala {
+  private class StandardDeviceImpl(failingPolicy: FailingPolicyScala) extends DeviceScala {
+    private var onFlag: Boolean = false
+
+    override def on(): Unit =
+      if (!failingPolicy.attemptOn())
+        throw new IllegalStateException()
+      else
+        onFlag = true
+
+
+    override def off(): Unit =
+      onFlag = false
+
+    override def isOn(): Boolean =
+      onFlag
+
+    override def reset(): Unit = {
+      off()
+      failingPolicy.reset()
+    }
+
+    override def toString: String =
+      s"DeviceScala{policy=${failingPolicy.policyName()}, on=$onFlag}"
+
+  }
+
+  def apply(failingPolicy: FailingPolicyScala): DeviceScala = new StandardDeviceImpl(Objects.requireNonNull(failingPolicy))
+
+}
+```
+```Scala
+trait FailingPolicyScala {
+
+  def attemptOn(): Boolean
+
+  def reset(): Unit
+
+  def policyName(): String
+
+}
+
+object FailingPolicyScala {
+  private class RandomFailingImpl extends FailingPolicyScala {
+
+    private val random = new Random
+    private var failed = false
+
+    override def attemptOn(): Boolean = {
+      failed = failed || random.nextBoolean()
+      !failed
+    }
+
+    override def reset(): Unit =
+      failed = false
+
+    override def policyName(): String =
+      "random"
+
+  }
+
+  def apply(): FailingPolicyScala = new RandomFailingImpl
+
+}
+```
+
+Queste vengono poi utilizzate tramite gli appositi "init" all'interno di ciascun test che vanno ad utilizzare le nuove dipendenze scala. Per vedere la lista dei [Test](src/test/java/devices). La struttura di base è la stessa descritta nel Task 1, cambiano soltanto i riferimenti. Di seguito si riporta un esempio di un test che utilizza la business logic Scala. 
+```Java
+class DummiesShowcaseTestScala extends TestTemplateImpl {
+
+    @Override
+    @BeforeEach
+    public void initMockScala() { super.initMockScala(); }
+
+    @Test
+    @DisplayName("Device is initially off")
+    void testInitiallyOff() {
+        assertFalse(deviceScala.isOn());
+    }
+
+}
+```
+```Java
+class SpiesShowcaseTestScala extends TestTemplateImpl {
+
+    @Override
+    @BeforeEach
+    public void initSpyScala() { super.initSpyScala(); }
+
+    @Test
+    @DisplayName("AttemptOn is called as expected")
+    void testReset() {
+        deviceScala.isOn();
+        verifyNoInteractions(failingPolicyScala);
+        try {
+            deviceScala.on();
+        } catch (IllegalStateException e) {
+        }
+        verify(failingPolicyScala).attemptOn();
+        deviceScala.reset();
+        assertEquals(2, mockingDetails(failingPolicyScala).getInvocations().size());
+    }
+
+}
+```
+
+Per quanto riguarda l'utilizzo di Visual Studio Code, non c'è miglioramento riguardo l'utilizzo di Mockito e JUnit. Anzi, penso sia meglio IntelliJ IDEA per la facilità che questo mette a disposizione nel rilevare immediatamente un sbt file e importare le dipendenze, cosa che non è immediata in VS Code in quanto per rilevare un sbt file bisogna prima scaricare Metals (plugin di Scala) e cambiare le preferenze in sbt rispetto a bloop. Per non parlare del fatto che VSCode non riconosce immediatamente il linguaggio Java e ha bisogno di una serie di plugin integrati in uno solo chiamato "Extension Pack For Java". Questo non basterà per far eseguire Java, ma poi navigando nel file "settings.json" della cartella ".vscode" bisogna poi definire la JDK da voler utilizzare. In sostanza, per numero di passaggi ritengo più comodo testare JUnit e Mockito tramite IntelliJ IDEA.
+
+## **Task 3 - REENGINEER.**
+Specification: Take an existing implemented small app with GUI, e.g. an OOP exam. Add a requirement that it outputs to console some relevant
+messages, through a log class. Now you have an App with at least 3 classes (GUI, Model, Log). How would you write integration tests
+for it? Search here: https://bitbucket.org/mviroli/oop2023-esami (2023, 2022,. . . )
+
+### Task 3 - Implementazione 
+
+
