@@ -1,4 +1,5 @@
-# Lab 02 - ASMD
+# Lab 02 - Lab Advanced testing, mocking, integration
+
 ## **Task 1 - REORGANISE.**
 Specification: The repo has a device example, discussed in room. Play with it. Reorganise tests, which are currently grouped by type of mock. Seek
 for the perfect unit test!
