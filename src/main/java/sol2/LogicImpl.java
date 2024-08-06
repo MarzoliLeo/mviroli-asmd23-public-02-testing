@@ -35,7 +35,7 @@ public class LogicImpl implements Logic {
 
     private boolean neighbours(Position p1, Position p2){
         this.log.info("Checking for neightbours marks...");
-        return Math.abs(p1.x()-p2.x()) <= 1 && Math.abs(p1.y()-p2.y()) <= 1;
+        return Math.abs(p1.getX()-p2.getX()) <= 1 && Math.abs(p1.getY()-p2.getY()) <= 1;
     }
 
     private boolean startMoving(Position position) {
@@ -48,7 +48,7 @@ public class LogicImpl implements Logic {
         this.log.info("Moving marks...");
         this.marks = this.marks
                 .stream()
-                .map(p -> new Position(p.x()+1, p.y()-1))
+                .map(p -> new Position(p.getX()+1, p.getY()-1))
                 .collect(Collectors.toCollection(LinkedList::new));
     }
 
@@ -59,7 +59,7 @@ public class LogicImpl implements Logic {
 
     @Override
     public boolean isOver() {
-        return this.marks.stream().anyMatch(p -> p.x() == this.size || p.y() == -1);
+        return this.marks.stream().anyMatch(p -> p.getX() == this.size || p.getY() == -1);
     }
 
     //Aux methods for testing.

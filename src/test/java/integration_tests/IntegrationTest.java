@@ -16,43 +16,55 @@ class IntegrationTest {
     @Test
     void testGameIntegration() {
         Log logMock = mock(Log.class);
-        // Arrange
         GUI guiSpy = spy(new GUI(10, logMock));
         LogicImpl logicMock = mock(LogicImpl.class);
 
         guiSpy.setLogic(logicMock);
 
-        // Stubbing the behavior of LogicImpl
+        stubLogicBehavior(logicMock);
+
+        JButton button = getFirstButton(guiSpy);
+        simulateButtonClick(guiSpy, button);
+
+        verifyInteractions(logMock, logicMock, guiSpy);
+        verifyButtonText(guiSpy);
+        verifyGameNotFinished(guiSpy);
+        captureLogMessages(logMock);
+    }
+
+    private void stubLogicBehavior(LogicImpl logicMock) {
         when(logicMock.hit(any())).thenReturn(Optional.of(1));
         when(logicMock.isOver()).thenReturn(false);
+    }
 
-        // Act
-        // Simulate user actions by clicking on a button
-        // Get the first button in the cells map of guiSpy
-        JButton button = guiSpy.getCells().keySet().iterator().next();
+    private JButton getFirstButton(GUI guiSpy) {
+        return guiSpy.getCells().keySet().iterator().next();
+    }
 
-        // Simulate a click on the button
+    private void simulateButtonClick(GUI guiSpy, JButton button) {
         guiSpy.handleButtonClick(button);
-        button.doClick(); // Simulate a click on the first button
+        button.doClick();
+    }
 
-        // Assert
-        // Verify that the expected interactions between GUI, LogicImpl, and Log occurred
+    private void verifyInteractions(Log logMock, LogicImpl logicMock, GUI guiSpy) {
         verify(logMock, atLeastOnce()).info(anyString());
         verify(logMock, never()).error(anyString());
         verify(logicMock, atLeastOnce()).hit(any(Position.class));
         verify(logicMock, never()).moveMarks();
         verify(logicMock, atLeastOnce()).getMark(any(Position.class));
+    }
 
-        // Verify that the GUI updated the button text
+    private void verifyButtonText(GUI guiSpy) {
         assertEquals("1", guiSpy.getCells().keySet().iterator().next().getText());
+    }
 
-        // Verify that the GUI did not exit the application (isOver is false)
+    private void verifyGameNotFinished(GUI guiSpy) {
         assertFalse(guiSpy.isGameFinished());
+    }
 
-        // Verify Log messages
+    private void captureLogMessages(Log logMock) {
         ArgumentCaptor<String> logCaptor = ArgumentCaptor.forClass(String.class);
         verify(logMock, atLeastOnce()).info(logCaptor.capture());
-
     }
 }
 
