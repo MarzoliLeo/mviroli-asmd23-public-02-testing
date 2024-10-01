@@ -121,106 +121,11 @@ Specification: Experiment with installing/using Mockito with Scala and/or in VSC
 technologies for Scala?
 
 ### Task 2 - Implementazione 
-Per l'implementazione in Scala come visto precedentemente in [TestTemplateImpl.java](src/test/java/devices/TestTemplateImpl.java) si è implementato la business logic tramite le classi [AdderScala.scala](src/main/java/coverage/AdderScala.scala), [DeviceScala.scala](src/main/java/devices/DeviceScala.scala) e [FailingPolicyScala.scala](src/main/java/devices/FailingPolicyScala.scala). Di seguito vengono riportate le loro implementazioni.
+Per l'implementazione in Scala come visto precedentemente in [TestTemplateImpl.java](src/test/java/devices/TestTemplateImpl.java) si è implementato la business logic tramite le classi 
+* [AdderScala.scala](src/main/java/coverage/AdderScala.scala)
+* [DeviceScala.scala](src/main/java/devices/DeviceScala.scala) 
+* [FailingPolicyScala.scala](src/main/java/devices/FailingPolicyScala.scala)
 
-
-```Scala
-trait AdderScala {
-  def add(i1: Int, i2: Int): Int
-}
-
-object AdderScala {
-  private class AdderScalaImpl extends AdderScala {
-    override def add(i1: Int, i2: Int): Int = (i1, i2) match {
-
-      case (x, y)
-        if x > 0 && y > 0
-      => x + y
-      case _ => -1
-    }
-  }
-  
-  def apply(): AdderScala = new AdderScalaImpl
-}
-```
-```Scala
-trait DeviceScala {
-
-  def on(): Unit
-
-  def off(): Unit
-
-  def isOn(): Boolean
-
-  def reset(): Unit
-
-}
-
-object DeviceScala {
-  private class StandardDeviceImpl(failingPolicy: FailingPolicyScala) extends DeviceScala {
-    private var onFlag: Boolean = false
-
-    override def on(): Unit =
-      if (!failingPolicy.attemptOn())
-        throw new IllegalStateException()
-      else
-        onFlag = true
-
-
-    override def off(): Unit =
-      onFlag = false
-
-    override def isOn(): Boolean =
-      onFlag
-
-    override def reset(): Unit = {
-      off()
-      failingPolicy.reset()
-    }
-
-    override def toString: String =
-      s"DeviceScala{policy=${failingPolicy.policyName()}, on=$onFlag}"
-
-  }
-
-  def apply(failingPolicy: FailingPolicyScala): DeviceScala = new StandardDeviceImpl(Objects.requireNonNull(failingPolicy))
-
-}
-```
-```Scala
-trait FailingPolicyScala {
-
-  def attemptOn(): Boolean
-
-  def reset(): Unit
-
-  def policyName(): String
-
-}
-
-object FailingPolicyScala {
-  private class RandomFailingImpl extends FailingPolicyScala {
-
-    private val random = new Random
-    private var failed = false
-
-    override def attemptOn(): Boolean = {
-      failed = failed || random.nextBoolean()
-      !failed
-    }
-
-    override def reset(): Unit =
-      failed = false
-
-    override def policyName(): String =
-      "random"
-
-  }
-
-  def apply(): FailingPolicyScala = new RandomFailingImpl
-
-}
-```
 
 Queste vengono poi utilizzate tramite gli appositi "init" all'interno di ciascun test che vanno ad utilizzare le nuove dipendenze scala. Per vedere la lista dei [Test](src/test/java/devices). La struttura di base è la stessa descritta nel Task 1, cambiano soltanto i riferimenti. Di seguito si riporta un esempio di un test che utilizza la business logic Scala. 
 ```Java
@@ -301,61 +206,16 @@ Utilizzando un riferimento alla seguente classe è possibile definire dei log da
     }
 ```
 
-Implementando ciò si disponeva di una applicazione suddivisa in GUI, Model, Log. E si era richiesto di scrivere un integration test ed esso si può trovare dentro [IntegrationTest.java](src/test/java/integration_tests/IntegrationTest.java). Questo appare nel seguente modo:
-```Java
-class IntegrationTest {
+Implementando ciò si disponeva di una applicazione suddivisa in GUI, Model, Log. E si era richiesto di scrivere un integration test ed esso si può trovare dentro [IntegrationTest.java](src/test/java/integration_tests/IntegrationTest.java).
 
-    @Test
-    void testGameIntegration() {
-        Log logMock = mock(Log.class);
-        // Arrange
-        GUI guiSpy = spy(new GUI(10, logMock));
-        LogicImpl logicMock = mock(LogicImpl.class);
-
-        guiSpy.setLogic(logicMock);
-
-        // Stubbing the behavior of LogicImpl
-        when(logicMock.hit(any())).thenReturn(Optional.of(1));
-        when(logicMock.isOver()).thenReturn(false);
-
-        // Act
-        // Simulate user actions by clicking on a button
-        // Get the first button in the cells map of guiSpy
-        JButton button = guiSpy.getCells().keySet().iterator().next();
-
-        // Simulate a click on the button
-        guiSpy.handleButtonClick(button);
-        button.doClick(); // Simulate a click on the first button
-
-        // Assert
-        // Verify that the expected interactions between GUI, LogicImpl, and Log occurred
-        verify(logMock, atLeastOnce()).info(anyString());
-        verify(logMock, never()).error(anyString());
-        verify(logicMock, atLeastOnce()).hit(any(Position.class));
-        verify(logicMock, never()).moveMarks();
-        verify(logicMock, atLeastOnce()).getMark(any(Position.class));
-
-        // Verify that the GUI updated the button text
-        assertEquals("1", guiSpy.getCells().keySet().iterator().next().getText());
-
-        // Verify that the GUI did not exit the application (isOver is false)
-        assertFalse(guiSpy.isGameFinished());
-
-        // Verify Log messages
-        ArgumentCaptor<String> logCaptor = ArgumentCaptor.forClass(String.class);
-        verify(logMock, atLeastOnce()).info(logCaptor.capture());
-
-    }
-}
-```
-In sintesi, il test definisce una [GUI](src/main/java/sol2/GUI.java), in cui vengono "iniettati" due mock: uno di Log e uno di LogicImpl. Preferisco l'utilizzo di uno spy in quanto mi permette di eseguire l'applicazione e avere un riscontro visivo di ciò che sta succedendo, cosa che non accade quando utilizzi un mock. All'interno del test definisco una logica minimale rappresentata da "handleButtonClick" che prende il core della business logic della GUI e ne cambia la visibilità in modo che si focalizzi soltanto sul verificare che le dipendenze ci siano e che l'applicazione funzioni come dovrebbe simulando il comportamento di un utente. In questo caso la complessità dell'applicazione era banale, siccome le funzionalità erano limitate, anche i Log lo erano. Integrare i log nel testing è risultato difficile. Inoltre, ho imparato che Mockito non ama i metodi statici. Non a caso ho dovuto ridefinire la mia classe Log nel corso dello sviluppo per accedervi tramite riferimento.
+In sintesi, il test definisce una [GUI.java](src/main/java/sol2/GUI.java), in cui vengono "iniettati" due mock: uno di Log e uno di LogicImpl. Preferisco l'utilizzo di uno spy in quanto mi permette di eseguire l'applicazione e avere un riscontro visivo di ciò che sta succedendo, cosa che non accade quando utilizzi un mock. All'interno del test definisco una logica minimale rappresentata da "handleButtonClick" che prende il core della business logic della GUI e ne cambia la visibilità in modo che si focalizzi soltanto sul verificare che le dipendenze ci siano e che l'applicazione funzioni come dovrebbe simulando il comportamento di un utente. In questo caso la complessità dell'applicazione era banale, siccome le funzionalità erano limitate, anche i Log lo erano. Integrare i log nel testing è risultato difficile. Inoltre, ho imparato che Mockito non ama i metodi statici. Non a caso ho dovuto ridefinire la mia classe Log nel corso dello sviluppo per accedervi tramite riferimento.
 
 ## **Task 4 - GUI-TESTER.**
 Specification: Generally, GUIs are a problem with testing. How do we test them? How do we automatise as most as possible testing of an app with a
 GUI? Play with a simple example and derive some useful consideration.
 
 ### Task 4 - Implementazione 
-Il mio caso di studio è stato proprio il task 3, che implementa una GUI. Sono pienamente d'accordo sul fatto che testare una GUI sia difficile, per due ragioni per me valide:
+Il mio caso di studio è stato proprio il task 3, che implementa una [GUI.java](src/main/java/sol2/GUI.java). Sono pienamente d'accordo sul fatto che testare una GUI sia difficile, per due ragioni per me valide:
 
 1. E' difficile replicare l'albero delle scelte di un utente.
 2. La GUI di per sè da già un riscontro visivo di ciò che deve accadere.
@@ -370,92 +230,90 @@ Experiment with this, based on the above tasks or in other cases. Is ChatGPT use
 ### Task 5 - Implementazione 
 All'interno di questo task parlo del ruolo che ChatGPT e GitHubCopilot hanno avuto nella realizzazione di questo laboratorio, analizzando singolarmente le varie fasi:
 * Write: gli LLM in generale sono molto bravi nella creazione di test che essi siano, JUnit, Mockito, unit test ed integration. Forniscono soluzioni molto specifiche per ciò che viene richiesto e sono in grado di aiutare molto sotto questo aspetto, fornendo anche idee di funzionalità che magari non si avevano precedentemente preso in considerazione.
-* Improve: questo è ciò che fanno meglio. Se si da un test ad un LLM e gli si chiede di scriverlo in maniera "avanzata" oppure utilizzando una particolare libreria rispetto ad un'altra o di usare spy, invece che mock, ecc. ecc. Lo fanno senza nessun tipo di problema e molto raramente sbagliano.
+  Per esempio chiedendo di generare un Junit test a ChatGPT si ottiene: 
+  ```Java
+  import org.junit.jupiter.api.Test;
+  import static org.junit.jupiter.api.Assertions.*;
+  
+  public class CalculatorTest {
+  
+      @Test
+      void testAdd() {
+          Calculator calculator = new Calculator();
+          int result = calculator.add(2, 3);
+          assertEquals(5, result, "2 + 3 should equal 5");
+      }
+  }
+  ```
+* Improve: questo è ciò che fanno meglio. Se si da un test ad un LLM e gli si chiede di scriverlo in maniera "avanzata" oppure utilizzando una particolare libreria rispetto ad un'altra o di usare spy, invece che mock, ecc. ecc. Lo fanno senza nessun tipo di problema e molto raramente sbagliano. Di seguito si riporta un esempio di miglioramento
+  ```Java
+  import org.junit.jupiter.api.Test;
+  import static org.junit.jupiter.api.Assertions.*;
+  
+  public class CalculatorTest {
+  
+      @Test
+      void testAdd() {
+          Calculator calculator = new Calculator();
+          assertEquals(5, calculator.add(2, 3), "2 + 3 should equal 5");
+          assertEquals(0, calculator.add(-3, 3), "-3 + 3 should equal 0");
+          assertEquals(-2, calculator.add(-1, -1), "-1 + -1 should equal -2");
+      }
+  
+      @Test
+      void testSubtract() {
+          Calculator calculator = new Calculator();
+          assertEquals(1, calculator.subtract(3, 2), "3 - 2 should equal 1");
+          assertEquals(-6, calculator.subtract(-3, 3), "-3 - 3 should equal -6");
+          assertEquals(0, calculator.subtract(0, 0), "0 - 0 should equal 0");
+      }
+  }
+  ```
 * Complete: Per quanto riguarda il completamento di test, rientra un po' nella fase di writing. Gli LLM in generale ho notato che non hanno difficoltà nel generare del codice che esso sia nuovo o partendo da un esempio. Senza fornigli il contesto della mia applicazione sono in grado di capire soltanto da altri test qual'è il comportamento che si vuole replicare.
+  ```Java
+  @Test
+  void testSubtract() {
+   Calculator calculator = new Calculator();
+   int result = calculator.subtract(10, 5);
+   // TODO: Aggiungere un'asserzione
+  }
+  ```
+  ```Java
+  @Test
+  void testSubtract() {
+   Calculator calculator = new Calculator();
+   int result = calculator.subtract(10, 5);
+   assertEquals(5, result, "10 - 5 should equal 5");
+  }
+
+  ```
 * Implement: Nell'implementazione rimango sempre dell'idea che gli LLM deviano il percorso di sviluppo di un programmatore. Perché seppur i test che forniscono sono corretti, non tengono in considerazione il design del sistema. Perciò, vanno comunque modificati per adattarsi al meglio a ciò che è stato sviluppato, facendo perdere un po' il focus su ciò che si vuole ottenere. Piuttosto che passare il tempo a implementare test, si passa il tempo a debuggare test generati dagli LLM.
+  ```Java
+  @Test
+    void testMultiply() {
+    Calculator calculator = new Calculator();
+    assertEquals(6, calculator.multiply(2, 3), "2 * 3 should equal 6");
+    assertEquals(0, calculator.multiply(0, 5), "0 * 5 should equal 0");
+    assertEquals(-15, calculator.multiply(-3, 5), "-3 * 5 should equal -15");
+    }
+  ```
 * Reverse-engineer: Ho effettuato una prova di quest'ultimo tramite ChatGPT, volendo effettuare reverse engineering del seguente test
-     ```Java
-      class MocksShowcaseTest extends TestTemplateImpl {
-    
-        @Override
-        @BeforeEach
-        public void initMock() {
-            super.initMock();
-            when(failingPolicy.attemptOn()).thenReturn(true, true, false);
-            when(failingPolicy.policyName()).thenReturn("mock");
-        }
-    
-        @Test
-        @DisplayName("attemptOn is called as expected")
-        void testAttemptOn() {
-            verify(failingPolicy, times(0)).attemptOn();
-            device.on();
-            verify(failingPolicy, times(1)).attemptOn();
-            assertTrue(device.isOn());
-    
-            device.off();
-            verify(failingPolicy, times(1)).attemptOn();
-            device.on();
-            verify(failingPolicy, times(2)).attemptOn();
-            assertTrue(device.isOn());
-    
-            device.off();
-            verify(failingPolicy, times(2)).attemptOn();
-            assertThrows(IllegalStateException.class, () -> device.on());
-            verify(failingPolicy, times(3)).attemptOn();
-        }
-
+  ```Java
+    @Test
+    void testDivide() {
+      Calculator calculator = new Calculator();
+      int result = calculator.divide(10, 2);
+      assertEquals(5, result, "10 / 2 should equal 5");
     }
     ```
-
-    chiedendogli di trovare una implementazione di "Device" e di "FailingPolicy" che faccia funzionare questo test, la risposta è stata la seguente:
-
-    ```Java
-    // Device.java
-    public class Device {
-        private boolean on;
-    
-        public void on() {
-            this.on = true;
+    ricavando
+   ```Java
+  public class Calculator {
+    public int divide(int a, int b) {
+        if (b == 0) {
+            throw new IllegalArgumentException("Division by zero is not allowed");
         }
-    
-        public void off() {
-            this.on = false;
-        }
-    
-        public boolean isOn() {
-            return on;
-        }
+        return a / b;
     }
-    
-     ```
-     ```Java
-    // FailingPolicy.java
-    public class FailingPolicy {
-        private boolean[] attemptOnResults;
-        private String policyName;
-    
-        public FailingPolicy(boolean[] attemptOnResults, String policyName) {
-            this.attemptOnResults = attemptOnResults;
-            this.policyName = policyName;
-        }
-    
-        public boolean attemptOn() {
-            // Simula il comportamento di attemptOn restituendo valori consecutivi
-            if (attemptOnResults.length > 0) {
-                boolean result = attemptOnResults[0];
-                // Rimuovi il primo elemento dall'array
-                attemptOnResults = Arrays.copyOfRange(attemptOnResults, 1, attemptOnResults.length);
-                return result;
-            } else {
-                // In caso l'array sia vuoto, ritorna false di default
-                return false;
-            }
-        }
-    
-        public String policyName() {
-            return policyName;
-        }
-    }
-    ```
-    Ciò che si conclude è il fatto che riesce per questa applicazione in particolare ad effettuare un reverse engineering molto vicino all'originale, dovuto al fatto che la complessità di ciò che è stato sviluppato è ancora sostenibile. Si può notare come non pensa ad una implementazione generale della classe, ma soltanto ai metodi che vengono utilizzati nel test. E per quanto riguarda FailingPolicy il mio commento personale, è che utilizza un array di boolean, che a mio parere è proprio brutto, simula lo stesso comportamento, ma non è di qualità.
+  }
+  ```
